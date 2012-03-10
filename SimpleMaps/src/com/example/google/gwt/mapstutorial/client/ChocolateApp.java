@@ -1,5 +1,6 @@
 package com.example.google.gwt.mapstutorial.client;
 
+import com.google.gwt.cell.client.TextButtonCell;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -26,14 +27,17 @@ import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.widget.client.TextButton;
 
 
 
@@ -51,13 +55,13 @@ public class ChocolateApp implements EntryPoint {
 	private LatLng currentLatLng = tenthStreet;
 	private Pov currentPov = Pov.newInstance();
 	private Polygon viewPolygon;
-	private Button displayButton = new Button("Display");
-	private Button removeDisplayButton = new Button("Remove Display");
-	private Button reviewPageButton = new Button("Review Page");
-	private Button removeReviewPageButton = new Button("Remove Review Page");
+	private TextButton displayButton = new TextButton("Display");
+	private TextButton removeDisplayButton = new TextButton("Remove Display");
+	private TextButton reviewPageButton = new TextButton("Review Page");
+	private TextButton removeReviewPageButton = new TextButton("Remove Review Page");
 	
-	private Button postReviewButton = new Button("Post Review");
-	private Button removeReviewButton = new Button("Remove Review");
+	private TextButton postReviewButton = new TextButton("Post Review");
+	private TextButton removeReviewButton = new TextButton("Remove Review");
 	
 	
 	private FlexTable postReviewTable = new FlexTable();
@@ -71,6 +75,8 @@ public class ChocolateApp implements EntryPoint {
 	    linkPanel.add(postReviewButton);
 	    linkPanel.add(removeReviewButton);
 	    
+	    
+	    
 	    RootPanel.get("links").add(linkPanel);
 	    
 	    panel = new HorizontalPanel();
@@ -81,7 +87,7 @@ public class ChocolateApp implements EntryPoint {
 	        	initializeMaps();
 	        	panel.add(panorama);
 	    	    panel.add(map);
-	    	    RootPanel.get().add(panel);
+	    	    RootPanel.get("maps").add(panel);
 	        }
 	      });
   
@@ -158,8 +164,8 @@ public class ChocolateApp implements EntryPoint {
 	  
   }
   
-  public HorizontalPanel initializeReviewPage() {
-	  HorizontalPanel reviewPagePanel = new HorizontalPanel();
+  public VerticalPanel initializeReviewPage() {
+	  VerticalPanel reviewPagePanel = new VerticalPanel();
 	  Label label = new Label("There is no review here!");
 	  
 	  reviewPagePanel.add(label);
@@ -169,24 +175,27 @@ public class ChocolateApp implements EntryPoint {
 	  
   }
  
-  public HorizontalPanel initializeReviewPage(ChocolateReview cReview) {
-	  HorizontalPanel reviewPagePanel = new HorizontalPanel();
-	  Label label = new Label(cReview.getStoreName());
-	  Label locationLabel = new Label(cReview.getLocation());
+  public VerticalPanel initializeReviewPage(ChocolateReview cReview) {
+	  VerticalPanel reviewPagePanel = new VerticalPanel();
+	  String title = "<h2>" + cReview.getStoreName() + "</h2><br/><br/><b>" +cReview.getLocation() + "</b>";
+	  HTMLPanel html = new HTMLPanel(title);
+	  //Label label = new Label(cReview.getStoreName());
+	  //Label locationLabel = new Label(cReview.getLocation());
 	  
 	  FlexTable table = new FlexTable();
 	  
 	  table.setText(0, 0, "Review's Name:");
-	  table.setText(0, 1, "");
+	  table.setText(0, 1, cReview.getReviewer());
 	  table.setText(1, 0, "Rating:");
-	  table.setText(1, 1, "");
+	  table.setText(1, 1, Integer.toString(cReview.getRating()));
 	  table.setText(2, 0, "Price:");
-	  table.setText(2, 1, "");
+	  table.setText(2, 1, Integer.toString(cReview.getPrice()));
 	  table.setText(3, 0, "Review:");
-	  table.setText(3, 1, "");
+	  table.setText(3, 1, cReview.getReview());
 	  
-	  reviewPagePanel.add(label);
-	  reviewPagePanel.add(locationLabel);
+	  reviewPagePanel.add(html);
+	  //reviewPagePanel.add(label);
+	  //reviewPagePanel.add(locationLabel);
 	  reviewPagePanel.add(table);
 	  return reviewPagePanel;
 	    
@@ -196,10 +205,18 @@ public class ChocolateApp implements EntryPoint {
 	  postReviewPanel = new HorizontalPanel();
 	  final TextBox titleTextBox = new TextBox();
 	  final TextBox locationTextBox = new TextBox();
-	  final TextBox ratingTextBox = new TextBox();
+	  
 	  final TextBox pricingTextBox = new TextBox();
 	  final TextBox nameTextBox = new TextBox();
 	  final TextArea reviewTextArea = new TextArea();
+	  
+	  final ListBox ratingListBox = new ListBox();
+	    ratingListBox.addItem("0");
+	    ratingListBox.addItem("1");
+	    ratingListBox.addItem("2");
+	    ratingListBox.addItem("3");
+	    ratingListBox.addItem("4");
+	    ratingListBox.setVisibleItemCount(5);
 	  Button submit = new Button("Submit");
 	  
 	  postReviewTable.setText(0, 0, "Store Name:");
@@ -207,7 +224,7 @@ public class ChocolateApp implements EntryPoint {
 	  postReviewTable.setText(1, 0, "Location:");
 	  postReviewTable.setWidget(1, 1, locationTextBox);
 	  postReviewTable.setText(2, 0, "Rating:");
-	  postReviewTable.setWidget(2, 1, ratingTextBox);
+	  postReviewTable.setWidget(2, 1, ratingListBox);
 	  postReviewTable.setText(3, 0, "Pricing:");
 	  postReviewTable.setWidget(3, 1, pricingTextBox);
 	  postReviewTable.setText(4, 0, "Reviewer's Name:");
@@ -221,9 +238,11 @@ public class ChocolateApp implements EntryPoint {
 
 	  submit.addClickHandler(new ClickHandler() {
 	        public void onClick(ClickEvent event) {
-	        	ChocolateReview cReview = new ChocolateReview(reviewTextArea.getText(), Integer.parseInt(pricingTextBox.toString()), Integer.parseInt(ratingTextBox.getText()),
+	        	
+	        	ChocolateReview cReview = new ChocolateReview(reviewTextArea.getText(), Integer.parseInt(pricingTextBox.getText()), ratingListBox.getSelectedIndex(),
 	   		 titleTextBox.getText(), locationTextBox.getText(), nameTextBox.getText());
 
+	        	panel.clear();
 	        	panel.add(initializeReviewPage(cReview));
 	        	RootPanel.get("reviewPage").add(panel);
 	        }

@@ -10,6 +10,41 @@ h1 {
   text-align: center;
 }
 
+body {
+	background-image:url('images/mapbw.jpg');
+	
+}
+
+#bigContainer {
+	position: relative;
+	
+}
+#links {
+	position: relative;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top: 200px;
+}
+#logo {
+	position: relative;
+	margin-left:auto;
+	margin-right:auto;
+	margin-top:50px;
+	height: 200px;
+	
+}
+
+#container {
+	position: relative;
+	margin-top:250px;
+	height: 400px;
+	width: 80%;
+	margin-left: auto;
+	margin-right: auto;
+	
+	background-color: #ffffff;
+	
+}
 .sendButton {
   display: block;
   font-size: 16pt;
