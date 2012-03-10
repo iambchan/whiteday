@@ -11,9 +11,19 @@
     <servlet-class>com.example.google.gwt.mapstutorial.server.GreetingServiceImpl</servlet-class>
   </servlet>
   
+    <servlet>
+    <servlet-name>chocolateService</servlet-name>
+    <servlet-class>com.example.google.gwt.mapstutorial.server.ChocolateServiceImpl</servlet-class>
+  </servlet>
+  
   <servlet-mapping>
     <servlet-name>greetServlet</servlet-name>
     <url-pattern>/simplemaps/greet</url-pattern>
+  </servlet-mapping>
+  
+   <servlet-mapping>
+    <servlet-name>chocolateService</servlet-name>
+    <url-pattern>/simplemaps/chocolateReview</url-pattern>
   </servlet-mapping>
   
   <!-- Default page to serve -->
