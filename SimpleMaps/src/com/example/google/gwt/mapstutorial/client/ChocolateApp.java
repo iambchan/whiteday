@@ -1,13 +1,20 @@
 package com.example.google.gwt.mapstutorial.client;
 
+
+
+import java.util.ArrayList;
+import java.util.ListIterator;
+
 import com.google.gwt.cell.client.TextButtonCell;
 import com.google.gwt.core.client.EntryPoint;
+
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.maps.client.InfoWindowContent;
 import com.google.gwt.maps.client.MapWidget;
 import com.google.gwt.maps.client.Maps;
 import com.google.gwt.maps.client.control.LargeMapControl;
+import com.google.gwt.maps.client.control.LargeMapControl3D;
 import com.google.gwt.maps.client.event.MapClickHandler;
 import com.google.gwt.maps.client.event.StreetviewInitializedHandler;
 import com.google.gwt.maps.client.event.StreetviewPitchChangedHandler;
@@ -23,6 +30,8 @@ import com.google.gwt.maps.client.streetview.StreetviewClient;
 import com.google.gwt.maps.client.streetview.StreetviewPanoramaOptions;
 import com.google.gwt.maps.client.streetview.StreetviewPanoramaWidget;
 import com.google.gwt.maps.client.streetview.LatLngStreetviewCallback;
+import com.google.gwt.user.cellview.client.CellTable.Style;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
@@ -46,8 +55,8 @@ import com.google.gwt.widget.client.TextButton;
  */
 public class ChocolateApp implements EntryPoint {
 
-	private HorizontalPanel panel;
-	private HorizontalPanel postReviewPanel;
+	private VerticalPanel panel;
+	private VerticalPanel postReviewPanel;
 	private MapWidget map;
 	private StreetviewPanoramaWidget panorama;
 	private StreetviewClient svClient;
@@ -63,29 +72,34 @@ public class ChocolateApp implements EntryPoint {
 	private TextButton postReviewButton = new TextButton("Post Review");
 	private TextButton removeReviewButton = new TextButton("Remove Review");
 	
+	ArrayList<ChocolateReview> arrayList = new ArrayList<ChocolateReview>();
 	
 	private FlexTable postReviewTable = new FlexTable();
   // GWT module entry point method.
   public void onModuleLoad() {
 
-	    HorizontalPanel linkPanel = new HorizontalPanel();
+	  
+	  
+	    HTMLPanel linkPanel = new HTMLPanel("");
+	    
 	    linkPanel.add(displayButton);
-	    linkPanel.add(removeDisplayButton);
+	    //linkPanel.add(removeDisplayButton);
 	    linkPanel.add(reviewPageButton);
 	    linkPanel.add(postReviewButton);
-	    linkPanel.add(removeReviewButton);
+	    //linkPanel.add(removeReviewButton);
 	    
-	    
-	    
+
 	    RootPanel.get("links").add(linkPanel);
 	    
-	    panel = new HorizontalPanel();
+	    initializeMaps();
+	    
+	    panel = new VerticalPanel();
 	    displayButton.addClickHandler(new ClickHandler() {
 	        public void onClick(ClickEvent event) {
 	        	panel.clear();
 	        	
-	        	initializeMaps();
-	        	panel.add(panorama);
+	        	
+	        	//panel.add(panorama);
 	    	    panel.add(map);
 	    	    RootPanel.get("maps").add(panel);
 	        }
@@ -141,7 +155,8 @@ public class ChocolateApp implements EntryPoint {
 	    panorama.setSize("500px", "300px");
 
 	    map = new MapWidget(tenthStreet, 16);
-	    map.setSize("500px", "300px");
+	    map.setSize("500px", "600px");
+	    map.addControl(new LargeMapControl3D());
 	    map.addMapClickHandler(new MapClickHandler() {
 	      public void onClick(MapClickEvent event) {
 	        LatLng point = event.getLatLng() == null ? event.getOverlayLatLng()
@@ -166,15 +181,75 @@ public class ChocolateApp implements EntryPoint {
   
   public VerticalPanel initializeReviewPage() {
 	  VerticalPanel reviewPagePanel = new VerticalPanel();
-	  Label label = new Label("There is no review here!");
 	  
-	  reviewPagePanel.add(label);
+	  if (arrayList.size() == 0) {
+		  Label label = new Label("There is no review here!");
+		  reviewPagePanel.add(label);
+	  }
+		  
+	  ListIterator <ChocolateReview> itr = arrayList.listIterator();
 	  
+	  while (itr.hasNext()) {
+		  HTMLPanel html = new HTMLPanel("<br/>");
+		  ChocolateReview cReview = itr.next();
+		  
+		  FlexTable table = new FlexTable();
+		  
+		  table.setText(0, 0, "Store Name:");
+		  table.setText(0, 1, cReview.getStoreName());
+		  table.setText(1, 0, "Location:");
+		  table.setText(1, 1, cReview.getLocation());
+		  table.setText(2, 0, "Review's Name:");
+		  table.setText(2, 1, cReview.getReviewer());
+		  table.setText(3, 0, "Rating:");
+		  table.setText(3, 1, Integer.toString(cReview.getRating()));
+		  table.setText(4, 0, "Price:");
+		  table.setText(4, 1, Integer.toString(cReview.getPrice()));
+		  table.setText(5, 0, "Review:");
+		  table.setText(5, 1, cReview.getReview());
+		  
+		  reviewPagePanel.add(html);
+		  reviewPagePanel.add(table);
+	  
+	  }
 	  return reviewPagePanel;
 	  
 	  
   }
  
+  public void findLocation(final String location) {
+		LatLngCallback callback = new LatLngCallback() {
+
+			public void onFailure() {
+				Window.alert("Location not found");
+			}
+
+			public void onSuccess(LatLng point) {
+				// add the location onto the map
+				Marker marker = new Marker(point);
+				map.addOverlay(marker);
+				map.setCenter(point);
+				VerticalPanel panel = new VerticalPanel();
+				InfoWindowContent content = new InfoWindowContent(panel);
+				panel.add(new Label(location));
+				map.getInfoWindow().open(marker, content);
+		
+			}
+		};
+		Geocoder geocoder = new Geocoder();
+		geocoder.getLatLng(location, callback);
+	}
+  
+	private void addMarker(LatLng point, String location)
+	{
+		Marker marker = new Marker(point);
+		map.addOverlay(marker);
+		map.setCenter(point);
+		VerticalPanel panel = new VerticalPanel();
+		InfoWindowContent content = new InfoWindowContent(panel);
+		panel.add(new Label(location));
+		map.getInfoWindow().open(marker, content);
+	}
   public VerticalPanel initializeReviewPage(ChocolateReview cReview) {
 	  VerticalPanel reviewPagePanel = new VerticalPanel();
 	  String title = "<h2>" + cReview.getStoreName() + "</h2><br/><br/><b>" +cReview.getLocation() + "</b>";
@@ -202,7 +277,9 @@ public class ChocolateApp implements EntryPoint {
   }
   
   public void initializePostReviewPanel() {
-	  postReviewPanel = new HorizontalPanel();
+	  
+	  HTMLPanel html = new HTMLPanel("<center><h2>Post a Review!</h2></center><br/>");
+	  postReviewPanel = new VerticalPanel();
 	  final TextBox titleTextBox = new TextBox();
 	  final TextBox locationTextBox = new TextBox();
 	  
@@ -233,6 +310,7 @@ public class ChocolateApp implements EntryPoint {
 	  postReviewTable.setWidget(5, 1, reviewTextArea);
 	  postReviewTable.setWidget(6, 0, submit);
 	  
+	  postReviewPanel.add(html);
 	  postReviewPanel.add(postReviewTable);
 
 
@@ -242,9 +320,17 @@ public class ChocolateApp implements EntryPoint {
 	        	ChocolateReview cReview = new ChocolateReview(reviewTextArea.getText(), Integer.parseInt(pricingTextBox.getText()), ratingListBox.getSelectedIndex(),
 	   		 titleTextBox.getText(), locationTextBox.getText(), nameTextBox.getText());
 
+	        	arrayList.add(cReview);
+	        	
+	        	final String location = locationTextBox.getText();
+	        	
+	        	findLocation(location);
+	        	
 	        	panel.clear();
 	        	panel.add(initializeReviewPage(cReview));
 	        	RootPanel.get("reviewPage").add(panel);
+	        	
+	        	
 	        }
 	  });
 	  
